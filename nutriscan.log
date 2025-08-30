@@ -6,13 +6,8 @@ INFO:matplotlib.category:Using categorical units to plot a list of strings that 
 INFO:matplotlib.category:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
 INFO:matplotlib.category:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
 INFO:matplotlib.category:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+INFO:root:Status: Switched to Scan & Analyze tab
 INFO:root:Status: Switched to Health Report tab
 INFO:root:Status: Switched to Health Profile tab
 INFO:root:Status: Switched to Audit tab
-INFO:root:Status: Switched to AI Coach tab
-INFO:root:Status: Switched to Subscriptions tab
-INFO:root:Status: Switched to Meal Planner tab
 INFO:root:Status: Switched to Family Hub tab
-INFO:root:Status: Switched to Pain Relief & Exercises tab
-INFO:root:Health Community database initialized successfully
-INFO:root:Health Community database initialized successfully

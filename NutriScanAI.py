@@ -24,7 +24,7 @@ from playsound import playsound
 
 # --- Configuration ---
 # 🚨 Replace with your VALID Gemini API Key
-API_KEY = 'AIzaSyAsAuM6S-nXSBF8W_0yB0dFRf8Uo8WCYTg'
+API_KEY = 'AIzaSyBcEqG-Wx64WB8V5fW8qHAMLIhHkLth4Q4'
 
 # ✨ NEW: Pluggable LLM Agent Architecture
 class BaseAgent:
@@ -104,7 +104,7 @@ class NutriScanApp(ctk.CTk):
 
         # --- Configure Gemini API --- # This line should already exist
         # --- Configure Gemini API ---
-        api_key = os.getenv('AIzaSyAsAuM6S-nXSBF8W_0yB0dFRf8Uo8WCYTg') or API_KEY
+        api_key = os.getenv('AIzaSyBcEqG-Wx64WB8V5fW8qHAMLIhHkLth4Q4') or API_KEY
         if api_key:
             try:
                 genai.configure(api_key=api_key)
@@ -234,6 +234,9 @@ class NutriScanApp(ctk.CTk):
         self.tab_view.add("Family Hub") 
         self.tab_view.add("Pain Relief & Exercises")  # NEW TAB
         self.tab_view.add("Health Community")  # NEW SOCIAL COMMUNITY TAB
+        self.tab_view.add("Doctor Consultation")  # NEW DOCTOR CONSULTATION TAB
+        self.tab_view.add("Buy Medicines")
+        
 
         self.create_dashboard_tab(self.tab_view.tab("Dashboard"))
         self.create_analysis_tab(self.tab_view.tab("Scan & Analyze"))
@@ -246,6 +249,10 @@ class NutriScanApp(ctk.CTk):
         self.create_family_hub_tab(self.tab_view.tab("Family Hub")) 
         self.create_pain_relief_tab(self.tab_view.tab("Pain Relief & Exercises"))  # NEW TAB CREATION
         self.create_health_community_tab(self.tab_view.tab("Health Community"))  # NEW TAB CREATION
+        self.create_doctor_consultation_tab(self.tab_view.tab("Doctor Consultation"))  # NEW TAB CREATION
+        self.create_medicine_suggestions_tab(self.tab_view.tab("Buy Medicines"))
+        
+
 
         # Bind tab change event to stop voice
         self.tab_view._segmented_button.configure(command=self.on_tab_change)
@@ -1242,95 +1249,30 @@ class NutriScanApp(ctk.CTk):
             self.profile_data[key] = entry.get()
         self.save_profile()
 
-    # ===================================================================
+      # ===================================================================
     # TAB 5: Audit
     # ===================================================================
     def create_audit_tab(self, tab):
         if not self.is_running:
             return
         tab.grid_columnconfigure(0, weight=1)
-        tab.grid_rowconfigure(1, weight=1)
-        
-        # Title
-        title_label = ctk.CTkLabel(tab, text="🏠 Pantry Audit & Recommendations", font=ctk.CTkFont(size=24, weight="bold"), text_color="#FFFFFF")
+        tab.grid_rowconfigure(0, weight=1)
+        audit_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="#2D3748")
+        audit_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        audit_frame.grid_columnconfigure(0, weight=1)
+        title_label = ctk.CTkLabel(audit_frame, text="Home Product Audit", font=ctk.CTkFont(size=24, weight="bold"), text_color="#FFFFFF")
         title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
-        
-        # Main content area with scroll
-        main_frame = ctk.CTkScrollableFrame(tab, fg_color="transparent")
-        main_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
-        main_frame.grid_columnconfigure(0, weight=1)
-        
-        # Upload section
-        upload_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
-        upload_frame.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="ew")
-        upload_frame.grid_columnconfigure(0, weight=1)
-        
-        upload_header = ctk.CTkLabel(upload_frame, text="📸 Upload Product Images", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
-        upload_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
-        
-        upload_button = ctk.CTkButton(
-            upload_frame, 
-            text="Select Product Images", 
-            command=self.upload_audit_images, 
-            height=40, 
-            fg_color="#10B981", 
-            hover_color="#059669"
-        )
-        upload_button.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
-        
-        self.audit_preview_label = ctk.CTkLabel(
-            upload_frame, 
-            text="No images uploaded yet. Upload images of your pantry items to get personalized recommendations.", 
-            font=ctk.CTkFont(size=12), 
-            wraplength=500, 
-            justify="left", 
-            text_color="#D1D5DB"
-        )
-        self.audit_preview_label.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="w")
-        
-        # Pantry list section
-        pantry_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
-        pantry_frame.grid(row=1, column=0, padx=0, pady=(0, 20), sticky="ew")
-        pantry_frame.grid_columnconfigure(0, weight=1)
-        
-        pantry_header = ctk.CTkLabel(pantry_frame, text="📋 Detected Pantry Items", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
-        pantry_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
-        
-        self.pantry_list_textbox = ctk.CTkTextbox(
-            pantry_frame,
-            corner_radius=8,
-            state="disabled",
-            font=("Arial", 12),
-            wrap="word",
-            fg_color="#1F2937",
-            text_color="#D1D5DB",
-            height=120
-        )
-        self.pantry_list_textbox.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
-        
-        # Recommendations section
-        recommendations_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
-        recommendations_frame.grid(row=2, column=0, padx=0, pady=(0, 20), sticky="ew")
+        upload_button = ctk.CTkButton(audit_frame, text="Upload Product Images", command=self.upload_audit_images, height=40, fg_color="#10b981", hover_color="#059669")
+        upload_button.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+        self.audit_preview_label = ctk.CTkLabel(audit_frame, text="No images uploaded yet.", font=ctk.CTkFont(size=14), wraplength=400, justify="left", text_color="#D1D5DB")
+        self.audit_preview_label.grid(row=2, column=0, padx=20, pady=10, sticky="w")
+        recommendations_frame = ctk.CTkFrame(audit_frame, corner_radius=10, fg_color="#2B2B2B")
+        recommendations_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
         recommendations_frame.grid_columnconfigure(0, weight=1)
-        
-        rec_header = ctk.CTkLabel(recommendations_frame, text="💡 AI Recommendations", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
-        rec_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
-        
-        self.audit_rec_detail = ctk.CTkTextbox(
-            recommendations_frame,
-            corner_radius=8,
-            state="disabled",
-            font=("Arial", 12),
-            wrap="word",
-            fg_color="#1F2937",
-            text_color="#D1D5DB",
-            height=150
-        )
-        self.audit_rec_detail.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
-        
-        # Initialize audit data
-        self.audit_products = []
-        self.pantry_items = []
+        rec_label = ctk.CTkLabel(recommendations_frame, text="AI Recommendations", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
+        rec_label.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="w")
+        self.audit_rec_detail = ctk.CTkLabel(recommendations_frame, text="Upload product images to get suggestions.", font=ctk.CTkFont(size=12), text_color="#D1D5DB", wraplength=400, justify="left")
+        self.audit_rec_detail.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="w")
 
     def upload_audit_images(self):
         if not self.is_running:
@@ -1362,229 +1304,25 @@ class NutriScanApp(ctk.CTk):
     def analyze_audit_products(self, text):
         try:
             model = genai.GenerativeModel('gemini-1.5-flash')
-            allergies = self.profile_data.get("allergies", "")
-            goals = self.profile_data.get("goals", "")
-            
-            json_template = """
-{
-  "pantry_items": [
-    {
-      "name": "string",
-      "category": "string",
-      "health_rating": "number (0-100)",
-      "expiry_info": "string",
-      "nutritional_notes": "string"
-    }
-  ],
-  "recommendations": {
-    "healthy_items": ["string"],
-    "items_to_limit": ["string"],
-    "items_to_replace": ["string"],
-    "suggested_additions": ["string"],
-    "general_advice": "string"
-  },
-  "pantry_score": "number (0-100)",
-  "summary": "string"
-}
-"""
             prompt = f"""
-            You are an advanced Health Product Analysis AI for NutriScanAI. Analyze the following text from pantry product images:
-            
-            Product Text: {text}
-            
-            User Profile:
-            - Allergies: {allergies}
-            - Health Goals: {goals}
-            
-            Your task:
-            1. Identify all food products mentioned in the text
-            2. Categorize them (e.g., grains, proteins, snacks, beverages, etc.)
-            3. Rate each item's healthiness (0-100 scale)
-            4. Check for expiry dates or freshness indicators
-            5. Provide personalized recommendations based on user's health profile
-            6. Calculate overall pantry health score
-            7. Suggest healthier alternatives for unhealthy items
-            
+            You are an advanced Health Product Analysis AI. Analyze the following text from product images:
+            {text}
             Respond in JSON format:
             ```json
-            {json_template}
-            ```
-            
-            Focus on:
-            - Nutritional value assessment
-            - Allergen identification
-            - Health goal alignment
-            - Expiry date warnings
-            - Healthier alternatives
-            """
-            
-            response = model.generate_content(prompt)
-            json_text = response.text.strip().replace("```json", "").replace("```", "")
-            return json.loads(json_text)
-            
-        except Exception as e:
-            print(f"Error in audit analysis: {e}")
-            # Return fallback analysis
-            return self.get_fallback_audit_analysis(text)
-
-    def get_fallback_audit_analysis(self, text):
-        """Fallback audit analysis when AI fails"""
-        # Simple text parsing to extract potential food items
-        common_foods = [
-            "rice", "pasta", "bread", "milk", "cheese", "eggs", "chicken", "beef", "fish",
-            "tomatoes", "onions", "potatoes", "carrots", "apples", "bananas", "oranges",
-            "cereal", "yogurt", "butter", "oil", "sugar", "salt", "flour", "beans",
-            "nuts", "chips", "soda", "juice", "cookies", "candy", "chocolate"
-        ]
-        
-        detected_items = []
-        text_lower = text.lower()
-        
-        for food in common_foods:
-            if food in text_lower:
-                detected_items.append({
-                    "name": food.title(),
-                    "category": self.categorize_food(food),
-                    "health_rating": self.get_food_health_rating(food),
-                    "expiry_info": "Check package for expiry date",
-                    "nutritional_notes": self.get_food_nutritional_notes(food)
-                })
-        
-        return {
-            "pantry_items": detected_items,
-            "recommendations": {
-                "healthy_items": [item["name"] for item in detected_items if item["health_rating"] >= 70],
-                "items_to_limit": [item["name"] for item in detected_items if 40 <= item["health_rating"] < 70],
-                "items_to_replace": [item["name"] for item in detected_items if item["health_rating"] < 40],
-                "suggested_additions": ["Fresh vegetables", "Whole grains", "Lean proteins", "Healthy fats"],
-                "general_advice": "Consider adding more fresh produce and whole foods to your pantry."
-            },
-            "pantry_score": min(100, max(0, sum(item["health_rating"] for item in detected_items) // len(detected_items) if detected_items else 50)),
-            "summary": f"Found {len(detected_items)} items in your pantry. Focus on adding more whole foods and reducing processed items."
-        }
-
-    def categorize_food(self, food):
-        """Categorize food items"""
-        categories = {
-            "grains": ["rice", "pasta", "bread", "cereal", "flour", "oats"],
-            "proteins": ["chicken", "beef", "fish", "eggs", "beans", "tofu"],
-            "dairy": ["milk", "cheese", "yogurt", "butter"],
-            "vegetables": ["tomatoes", "onions", "potatoes", "carrots"],
-            "fruits": ["apples", "bananas", "oranges"],
-            "snacks": ["chips", "cookies", "candy", "chocolate"],
-            "beverages": ["soda", "juice"],
-            "pantry": ["oil", "sugar", "salt", "nuts"]
-        }
-        
-        for category, items in categories.items():
-            if food in items:
-                return category.title()
-        return "Other"
-
-    def get_food_health_rating(self, food):
-        """Get health rating for food items"""
-        healthy_foods = ["rice", "pasta", "bread", "milk", "cheese", "eggs", "chicken", "beef", "fish", "tomatoes", "onions", "potatoes", "carrots", "apples", "bananas", "oranges", "cereal", "yogurt", "beans", "nuts"]
-        moderate_foods = ["butter", "oil", "flour"]
-        unhealthy_foods = ["sugar", "chips", "soda", "juice", "cookies", "candy", "chocolate"]
-        
-        if food in healthy_foods:
-            return 80
-        elif food in moderate_foods:
-            return 60
-        elif food in unhealthy_foods:
-            return 30
-        else:
-            return 50
-
-    def get_food_nutritional_notes(self, food):
-        """Get nutritional notes for food items"""
-        notes = {
-            "rice": "Good source of carbohydrates, consider brown rice for more fiber",
-            "pasta": "Carbohydrate source, whole grain options are healthier",
-            "bread": "Choose whole grain varieties for more fiber",
-            "milk": "Good source of calcium and protein",
-            "cheese": "High in protein and calcium, but watch portion sizes",
-            "eggs": "Excellent source of protein and nutrients",
-            "chicken": "Lean protein source",
-            "beef": "Good protein source, choose lean cuts",
-            "fish": "Excellent source of omega-3 fatty acids",
-            "tomatoes": "Rich in lycopene and vitamin C",
-            "onions": "Good source of antioxidants",
-            "potatoes": "Good source of potassium, eat with skin for fiber",
-            "carrots": "Rich in beta-carotene and fiber",
-            "apples": "Good source of fiber and vitamin C",
-            "bananas": "Rich in potassium and natural sugars",
-            "oranges": "Excellent source of vitamin C",
-            "cereal": "Choose whole grain, low-sugar options",
-            "yogurt": "Good source of protein and probiotics",
-            "beans": "Excellent source of fiber and plant protein",
-            "nuts": "Good source of healthy fats and protein",
-            "butter": "High in saturated fat, use in moderation",
-            "oil": "Choose healthy oils like olive oil",
-            "flour": "Whole grain flour is healthier",
-            "sugar": "Limit added sugars",
-            "chips": "High in salt and unhealthy fats",
-            "soda": "High in sugar, avoid",
-            "juice": "High in sugar, eat whole fruits instead",
-            "cookies": "High in sugar and unhealthy fats",
-            "candy": "High in sugar, limit consumption",
-            "chocolate": "Dark chocolate in moderation can be healthy"
-        }
-        return notes.get(food, "Consider nutritional information on package")
-
-    def analyze_audit_products(self, text):
-        """Analyze audit products using AI"""
-        if not self.is_running:
-            return None
-            
-        try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            profile_data = self.profile_data or {}
-            allergies = profile_data.get("allergies", [])
-            goals = profile_data.get("goals", [])
-            
-            prompt = f"""
-            Analyze this pantry audit text and provide recommendations:
-            
-            Text: {text}
-            
-            User Allergies: {allergies}
-            User Goals: {goals}
-            
-            Extract all food items and provide:
-            1. List of pantry items with categories
-            2. Health recommendations for each item
-            3. Overall pantry health score
-            4. Suggested replacements for unhealthy items
-            
-            Respond in JSON format:
-            ```json
-            {{
-                "pantry_items": [
-                    {{
-                        "name": "item_name",
-                        "category": "category",
-                        "health_rating": "Good/Fair/Poor",
-                        "notes": "health notes"
-                    }}
-                ],
-                "recommendations": {{
-                    "healthy": ["items to keep"],
-                    "limit": ["items to limit"],
-                    "replace": ["items to replace"],
-                    "suggested_additions": ["healthy items to add"]
-                }},
-                "pantry_score": 75,
-                "summary": "overall assessment"
-            }}
+            {
+                "flagged": ["string"],
+                "recommendations": ["string"]
+            }
             ```
             """
             response = model.generate_content(prompt)
             json_text = response.text.strip().replace("```json", "").replace("```", "")
             return json.loads(json_text)
         except Exception as e:
-            print(f"Error in audit analysis: {e}")
-            return self.get_fallback_audit_analysis(text)
+            return {
+                "flagged": ["High-sodium sauce"],
+                "recommendations": ["Low-sodium soy sauce", "Olive oil spray"]
+            }
 
     def update_audit_recommendations(self, analysis):
         if not self.is_running:
@@ -1598,6 +1336,136 @@ class NutriScanApp(ctk.CTk):
         except Exception as e:
             self.audit_rec_detail.configure(text=f"Error displaying results: {e}")
             self.set_status("Error in audit display.", "red")
+
+    # ===================================================================
+    # TAB 6: AI Coach
+    # ===================================================================
+    def create_coach_tab(self, tab):
+        if not self.is_running:
+            return
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(0, weight=1)
+        self.coach_textbox = ctk.CTkTextbox(tab, corner_radius=10, state="disabled", font=("Arial", 14), wrap="word", fg_color="#2B2B2B", text_color="#FFFFFF")
+        self.coach_textbox.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20,10))
+        input_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        input_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 20))
+        input_frame.grid_columnconfigure(0, weight=1)
+        self.chat_entry = ctk.CTkEntry(input_frame, placeholder_text="Ask your AI coach a question...")
+        self.chat_entry.grid(row=0, column=0, sticky="ew")
+        self.chat_entry.bind("<Return>", self.send_chat_message)
+        self.send_button = ctk.CTkButton(input_frame, text="Send", width=100, command=self.send_chat_message, fg_color="#3B82F6", hover_color="#60A5FA")
+        self.send_button.grid(row=0, column=1, padx=(10, 0))
+        # Mic Button for STT
+        self.mic_button = ctk.CTkButton(input_frame, text="🎤 Speak", width=80,
+            command=self.capture_voice_input, fg_color="#10B981", hover_color="#34D399")
+        self.mic_button.grid(row=0, column=2, padx=(10, 0))
+
+        # Speaker Button for TTS (replay last AI response)
+        self.speaker_button = ctk.CTkButton(input_frame, text="🔊 Play", width=80,
+        command=self.play_last_ai_response, fg_color="#F59E0B", hover_color="#FBBF24")
+        self.speaker_button.grid(row=0, column=3, padx=(10, 0))
+
+        self.update_chat_display("AI Coach: ", "Hello! I am your AI Health Coach. How can I help you today?", is_ai=True)
+
+    def send_chat_message(self, event=None):
+        if not self.is_running:
+            return
+        user_message = self.chat_entry.get()
+        if not user_message.strip():
+            return
+        self.update_chat_display("You: ", user_message)
+        self.chat_entry.delete(0, "end")
+        self.chat_entry.configure(state="disabled")
+        self.send_button.configure(state="disabled")
+        self.set_status("AI Coach is thinking...", "blue")
+        coach_thread = threading.Thread(target=self.run_coach_in_thread, args=(user_message,))
+        coach_thread.start()
+
+    def run_coach_in_thread(self, user_message):
+        if not self.is_running:
+            return
+        try:
+            response_text = self.get_gemini_coach_response(user_message)
+            if self.is_running:
+                self.after(0, self.update_chat_display, "AI Coach: ", response_text, True)
+        except Exception as e:
+            if self.is_running:
+                self.after(0, self.update_chat_display, "AI Coach: ", f"Sorry, I encountered an error. Please try again. ({e})", True)
+        finally:
+            if self.is_running:
+                self.after(0, self.enable_chat_input)
+
+    def get_gemini_coach_response(self, user_message: str):
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        prompt = f"""
+        You are a friendly, encouraging, and knowledgeable AI Health Coach for the NutriScanAI app.
+        You confidently give safe over-the-counter product suggestions, nutrition tips, and general wellness advice.
+        You CAN suggest vitamins, supplements, skin-care products, diet plans, or lifestyle tips, as long as they are safe and commonly available.
+        Only advise to see a doctor if the question clearly involves a medical emergency or serious illness.
+        Keep answers:
+        - Clear and concise (2–5 sentences),
+        - Practical with examples (like specific nutrients or product types),
+        - Friendly and helpful.
+        User's question: "{user_message}"
+        """
+        response = model.generate_content(prompt)
+        return response.text
+    
+    
+
+    def update_chat_display(self, prefix, message, is_ai=False):
+        if not self.is_running:
+            return
+        self.coach_textbox.configure(state="normal")
+        tag_name = "ai_message" if is_ai else "user_message"
+        self.coach_textbox.tag_config(tag_name, foreground="#3b82f6" if is_ai else "white")
+        self.coach_textbox.insert("end", prefix, (tag_name,))
+        self.coach_textbox.insert("end", message + "\n\n")
+        self.coach_textbox.configure(state="disabled")
+        self.coach_textbox.yview_moveto(1.0)
+
+    def enable_chat_input(self):
+        if not self.is_running:
+            return
+        self.chat_entry.configure(state="normal")
+        self.send_button.configure(state="normal")
+        self.set_status("Ready", "default")
+        self.select_button.configure(state="normal")
+        self.chat_entry.delete(0, "end")
+
+    # ===================================================================
+    # TAB 7: Subscriptions
+    # ===================================================================
+    def create_subscriptions_tab(self, tab):
+        if not self.is_running:
+            return
+        tab.grid_columnconfigure((0, 1, 2), weight=1)
+        tab.grid_rowconfigure(0, weight=1)
+        plans = {
+            "Free": {"price": "$0/year", "features": ["Basic product scanning", "General health scores"], "color": "gray"},
+            "Pro": {"price": "$99.99/year", "features": ["Tailored recommendations", "Daily tracking", "Full ingredient transparency"], "color": "#3b82f6"},
+            "Elite": {"price": "$199.99/year", "features": ["All Pro features", "Genetic health integration", "AI health coaching"], "color": "gold"}
+        }
+        for i, (name, details) in enumerate(plans.items()):
+            plan_frame = ctk.CTkFrame(tab, border_width=2, corner_radius=10, border_color=details["color"], fg_color="#2D3748")
+            plan_frame.grid(row=0, column=i, padx=20, pady=20, sticky="nsew")
+            plan_frame.grid_rowconfigure(1, weight=1)
+            plan_header_frame = ctk.CTkFrame(plan_frame, fg_color="transparent")
+            plan_header_frame.pack(pady=15, padx=20, fill="x")
+            plan_name = ctk.CTkLabel(plan_header_frame, text=name, font=ctk.CTkFont(size=20, weight="bold"), text_color=details["color"])
+            plan_name.pack()
+            plan_price = ctk.CTkLabel(plan_header_frame, text=details["price"], font=ctk.CTkFont(size=18), text_color="#FFFFFF")
+            plan_price.pack(pady=5)
+            features_frame = ctk.CTkFrame(plan_frame, fg_color="transparent")
+            features_frame.pack(pady=5, padx=20, fill="both", expand=True)
+            for feature in details["features"]:
+                feature_label = ctk.CTkLabel(features_frame, text=f"✓ {feature}", anchor="w", wraplength=180, text_color="#D1D5DB")
+                feature_label.pack(pady=5, padx=10, fill="x")
+            button_text = "Current Plan" if name == "Free" else f"Upgrade to {name}"
+            button_state = "disabled" if name == "Free" else "normal"
+            button = ctk.CTkButton(plan_frame, text=button_text, state=button_state, height=40, fg_color="#3B82F6", hover_color="#60A5FA")
+            button.pack(side="bottom", fill="x", padx=20, pady=20)
+
 
     # ===================================================================
     # ===================================================================
@@ -4742,6 +4610,296 @@ class NutriScanApp(ctk.CTk):
             )
             notes_label.pack(padx=15, pady=15)
 
+            # ===================================================================
+    # ✨ NEW TAB: Doctor Consultation
+    # ===================================================================
+    def create_doctor_consultation_tab(self, tab):
+        if not self.is_running: return
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(1, weight=1)
+
+        # --- Header and Search Area ---
+        header_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        header_frame.grid(row=0, column=0, padx=20, pady=20, sticky="ew")
+        header_frame.grid_columnconfigure(1, weight=1)
+        
+        ctk.CTkLabel(header_frame, text="👨‍⚕️ Find & Book a Doctor", font=ctk.CTkFont(size=24, weight="bold")).grid(row=0, column=0, sticky="w")
+        
+        # Search Entry for city
+        self.doctor_city_entry = ctk.CTkEntry(header_frame, placeholder_text="Enter your city (e.g., Jodhpur)")
+        self.doctor_city_entry.grid(row=1, column=0, pady=(10, 0), sticky="ew")
+        
+        # Dropdown for specialty
+        specialties = ["All Specialties", "Cardiologist", "Dermatologist", "General Physician", "Neurologist", "Orthopedist", "Pediatrician"]
+        self.doctor_specialty_var = ctk.StringVar(value="All Specialties")
+        specialty_menu = ctk.CTkOptionMenu(header_frame, variable=self.doctor_specialty_var, values=specialties)
+        specialty_menu.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="ew")
+
+        search_button = ctk.CTkButton(header_frame, text="🔍 Search Doctors", command=self.search_doctors)
+        search_button.grid(row=1, column=2, pady=(10, 0), sticky="ew")
+
+        # --- Main Content Area for Doctor Listings ---
+        self.doctor_results_frame = ctk.CTkScrollableFrame(tab)
+        self.doctor_results_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        self.doctor_results_frame.grid_columnconfigure(0, weight=1)
+
+        # Load initial doctors (or a placeholder)
+        self.search_doctors(initial_load=True)
+
+    def search_doctors(self, initial_load=False):
+        """Filters and displays doctors based on search criteria."""
+        for widget in self.doctor_results_frame.winfo_children():
+            widget.destroy()
+
+        city = self.doctor_city_entry.get().strip().lower() if hasattr(self, 'doctor_city_entry') else ""
+        specialty = self.doctor_specialty_var.get() if hasattr(self, 'doctor_specialty_var') else "All Specialties"
+
+        # In a real app, this data would come from a database or API
+        all_doctors = [
+            {"name": "Dr. Anjali Sharma", "specialty": "Cardiologist", "city": "jodhpur", "experience": "15 Years", "availability": ["Mon", "Wed", "Fri"], "consultation": "Online & In-Clinic"},
+            {"name": "Dr. Vikram Singh", "specialty": "Orthopedist", "city": "jodhpur", "experience": "20 Years", "availability": ["Tue", "Thu"], "consultation": "In-Clinic Only"},
+            {"name": "Dr. Priya Gupta", "specialty": "Dermatologist", "city": "jaipur", "experience": "8 Years", "availability": ["Mon-Fri"], "consultation": "Online Only"},
+            {"name": "Dr. Rahul Verma", "specialty": "General Physician", "city": "jodhpur", "experience": "10 Years", "availability": ["Mon-Sat"], "consultation": "Online & In-Clinic"},
+            {"name": "Dr. Sunita Agarwal", "specialty": "Pediatrician", "city": "jaipur", "experience": "12 Years", "availability": ["Mon", "Tue", "Thu", "Fri"], "consultation": "In-Clinic Only"},
+        ]
+
+        # Filter logic
+        filtered_doctors = []
+        for doctor in all_doctors:
+            city_match = not city or city in doctor["city"]
+            specialty_match = specialty == "All Specialties" or specialty == doctor["specialty"]
+            if city_match and specialty_match:
+                filtered_doctors.append(doctor)
+
+        if initial_load:
+            ctk.CTkLabel(self.doctor_results_frame, text="Enter a city and select a specialty to find doctors near you.", 
+                         font=ctk.CTkFont(size=16), text_color="gray").pack(pady=50)
+            return
+
+        if not filtered_doctors:
+            ctk.CTkLabel(self.doctor_results_frame, text="No doctors found matching your criteria. Please try another search.", 
+                         font=ctk.CTkFont(size=16), text_color="gray").pack(pady=50)
+        else:
+            for doctor in filtered_doctors:
+                card = self.create_doctor_card(doctor)
+                card.pack(fill="x", padx=10, pady=10)
+    
+    def create_doctor_card(self, doctor_info):
+        """Creates a visual card for a single doctor."""
+        card = ctk.CTkFrame(self.doctor_results_frame, corner_radius=15, border_width=1, border_color="#444444")
+        card.grid_columnconfigure(1, weight=1)
+
+        # Placeholder for doctor's photo
+        photo_frame = ctk.CTkFrame(card, fg_color="#3B82F6", width=80, height=80, corner_radius=10)
+        photo_frame.grid(row=0, column=0, rowspan=3, padx=15, pady=15)
+        ctk.CTkLabel(photo_frame, text="👨‍⚕️", font=ctk.CTkFont(size=40)).pack(expand=True)
+        
+        # Doctor's details
+        name_label = ctk.CTkLabel(card, text=doctor_info["name"], font=ctk.CTkFont(size=18, weight="bold"))
+        name_label.grid(row=0, column=1, sticky="sw", padx=10, pady=(10, 0))
+
+        specialty_label = ctk.CTkLabel(card, text=f"{doctor_info['specialty']} • {doctor_info['experience']} Experience", 
+                                       font=ctk.CTkFont(size=12), text_color="gray")
+        specialty_label.grid(row=1, column=1, sticky="nw", padx=10)
+
+        # Consultation and Availability
+        info_frame = ctk.CTkFrame(card, fg_color="transparent")
+        info_frame.grid(row=2, column=1, sticky="ew", padx=10, pady=(5, 10))
+
+        consultation_type = doctor_info["consultation"]
+        consult_color = "#10B981" if "Online" in consultation_type else "#F59E0B"
+        ctk.CTkLabel(info_frame, text=f"Consultation: {consultation_type}", fg_color=consult_color, corner_radius=5,
+                     font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+
+        ctk.CTkLabel(info_frame, text=f"Available: {', '.join(doctor_info['availability'])}", 
+                     font=ctk.CTkFont(size=11), text_color="gray").pack(side="left", padx=10)
+        
+        # Booking Buttons
+        button_frame = ctk.CTkFrame(card, fg_color="transparent")
+        button_frame.grid(row=0, column=2, rowspan=3, padx=15)
+
+        book_clinic_button = ctk.CTkButton(button_frame, text="Book In-Clinic", height=35, command=lambda d=doctor_info: self.book_appointment(d, "In-Clinic"))
+        book_clinic_button.pack(pady=5)
+
+        book_online_button = ctk.CTkButton(button_frame, text="Book Online", height=35, command=lambda d=doctor_info: self.book_appointment(d, "Online"), 
+                                           fg_color="#10B981", hover_color="#059669")
+        book_online_button.pack(pady=5)
+        
+        if "Online" not in consultation_type:
+            book_online_button.configure(state="disabled")
+        if "In-Clinic" not in consultation_type:
+            book_clinic_button.configure(state="disabled")
+
+        return card
+
+    def book_appointment(self, doctor_info, appt_type):
+        """Placeholder function to handle the booking action."""
+        # In a real app, this would open a calendar, handle payments, etc.
+        message = f"Booking an '{appt_type}' appointment with {doctor_info['name']}..."
+        self.set_status(message, "green")
+        
+        # Show a confirmation dialog
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Appointment Booking")
+        dialog.geometry("350x150")
+        dialog.transient(self)
+        dialog.grab_set()
+
+        label = ctk.CTkLabel(dialog, text=f"{message}\n\n(This is a demo. No actual booking will be made.)", wraplength=300)
+        label.pack(pady=20, padx=20)
+        
+        ok_button = ctk.CTkButton(dialog, text="OK", command=dialog.destroy, width=100)
+        ok_button.pack(pady=10)
+
+# ===================================================================
+    # ✨ NEW TAB: Medicine Suggestions
+    # ===================================================================
+    def create_medicine_suggestions_tab(self, tab):
+        if not self.is_running: return
+        tab.grid_columnconfigure(0, weight=1)
+        tab.grid_rowconfigure(2, weight=1)
+
+        # --- Header and Input ---
+        header_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        header_frame.grid(row=0, column=0, padx=20, pady=20, sticky="ew")
+        header_frame.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(header_frame, text="💊 AI Medicine Suggestions", font=ctk.CTkFont(size=24, weight="bold")).grid(row=0, column=0, columnspan=2, sticky="w")
+        ctk.CTkLabel(header_frame, text="Describe a symptom or condition to get AI-powered suggestions. (For informational purposes only)", text_color="gray").grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 10))
+
+        self.symptom_entry = ctk.CTkEntry(header_frame, placeholder_text="e.g., 'Headache and sinus pressure', 'Indigestion', 'Joint pain'")
+        self.symptom_entry.grid(row=2, column=0, sticky="ew")
+
+        self.suggestion_button = ctk.CTkButton(header_frame, text="Get Suggestions", command=self.get_medicine_suggestions)
+        self.suggestion_button.grid(row=2, column=1, padx=(10, 0))
+
+        # --- Results Display Area ---
+        results_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        results_frame.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
+        results_frame.grid_columnconfigure((0, 1), weight=1)
+        results_frame.grid_rowconfigure(1, weight=1)
+        
+        # --- Allopathic Suggestions ---
+        ctk.CTkLabel(results_frame, text="Modern Medicine (Allopathy)", font=ctk.CTkFont(size=18, weight="bold")).grid(row=0, column=0, padx=10, sticky="w")
+        self.allopathic_textbox = ctk.CTkTextbox(results_frame, wrap="word", state="disabled", corner_radius=10)
+        self.allopathic_textbox.grid(row=1, column=0, padx=(0, 10), sticky="nsew")
+        
+        # --- Ayurvedic Suggestions ---
+        ctk.CTkLabel(results_frame, text="Traditional Remedies (Ayurveda)", font=ctk.CTkFont(size=18, weight="bold")).grid(row=0, column=1, padx=10, sticky="w")
+        self.ayurvedic_textbox = ctk.CTkTextbox(results_frame, wrap="word", state="disabled", corner_radius=10)
+        self.ayurvedic_textbox.grid(row=1, column=1, padx=(10, 0), sticky="nsew")
+
+    def get_medicine_suggestions(self):
+        symptom = self.symptom_entry.get().strip()
+        if not symptom:
+            self.set_status("Please enter a symptom or condition.", "red")
+            return
+        
+        self.set_status(f"Getting AI suggestions for '{symptom}'...", "blue")
+        self.suggestion_button.configure(state="disabled")
+        
+        # Clear previous results
+        self.allopathic_textbox.configure(state="normal")
+        self.ayurvedic_textbox.configure(state="normal")
+        self.allopathic_textbox.delete("1.0", "end")
+        self.ayurvedic_textbox.delete("1.0", "end")
+        self.allopathic_textbox.configure(state="disabled")
+        self.ayurvedic_textbox.configure(state="disabled")
+        
+        threading.Thread(target=self.run_medicine_search_in_thread, args=(symptom,), daemon=True).start()
+
+    def run_medicine_search_in_thread(self, symptom):
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            prompt = f"""
+            Act as a knowledgeable health advisor. The user is asking for suggestions for the following symptom/condition: "{symptom}".
+
+            Your task is to provide:
+            1.  A list of 2-3 common over-the-counter Allopathic (Modern Medicine) suggestions.
+            2.  A list of 2-3 common Ayurvedic (Traditional Indian) remedies or supplements.
+            3.  For each suggestion, briefly describe its common use and any important precautions.
+            4.  Include a very clear and prominent disclaimer at the end.
+
+            Respond ONLY with a valid JSON object in the following format. Do not include any text before or after the JSON object.
+            ```json
+            {{
+              "allopathic": [
+                {{
+                  "name": "string (e.g., Paracetamol)",
+                  "use": "string (e.g., For pain and fever relief.)",
+                  "notes": "string (e.g., Do not exceed recommended dosage.)"
+                }}
+              ],
+              "ayurvedic": [
+                {{
+                  "name": "string (e.g., Turmeric (Haldi) Milk)",
+                  "use": "string (e.g., Known for its anti-inflammatory properties.)",
+                  "notes": "string (e.g., Best consumed warm before bedtime.)"
+                }}
+              ],
+              "disclaimer": "This is AI-generated information and not a substitute for professional medical advice. Always consult a qualified doctor or healthcare provider before starting any new treatment."
+            }}
+            ```
+            """
+            response = model.generate_content(prompt)
+            suggestions = self._safe_json_loads(response.text)
+
+            if self.is_running:
+                self.after(0, self.display_medicine_suggestions, suggestions)
+
+        except Exception as e:
+            print(f"Error fetching medicine suggestions from AI: {e}")
+            if self.is_running:
+                self.after(0, self.set_status, f"An error occurred: {e}", "red")
+
+    def display_medicine_suggestions(self, suggestions):
+        if not suggestions:
+            self.set_status("Could not retrieve suggestions. Please try again.", "red")
+            self.suggestion_button.configure(state="normal")
+            return
+
+        # --- Display Allopathic Suggestions ---
+        self.allopathic_textbox.configure(state="normal")
+        self.allopathic_textbox.delete("1.0", "end")
+        allopathic_meds = suggestions.get("allopathic", [])
+        if allopathic_meds:
+            for med in allopathic_meds:
+                self.allopathic_textbox.insert("end", f"{med['name']}\n", "header")
+                self.allopathic_textbox.insert("end", f"Use: {med['use']}\n", "text")
+                self.allopathic_textbox.insert("end", f"Note: {med['notes']}\n\n", "note")
+        else:
+            self.allopathic_textbox.insert("end", "No specific suggestions found.", "text")
+        
+        # --- Display Ayurvedic Suggestions ---
+        self.ayurvedic_textbox.configure(state="normal")
+        self.ayurvedic_textbox.delete("1.0", "end")
+        ayurvedic_remedies = suggestions.get("ayurvedic", [])
+        if ayurvedic_remedies:
+            for remedy in ayurvedic_remedies:
+                self.ayurvedic_textbox.insert("end", f"{remedy['name']}\n", "header")
+                self.ayurvedic_textbox.insert("end", f"Use: {remedy['use']}\n", "text")
+                self.ayurvedic_textbox.insert("end", f"Note: {remedy['notes']}\n\n", "note")
+        else:
+            self.ayurvedic_textbox.insert("end", "No specific suggestions found.", "text")
+
+        # --- Display Disclaimer ---
+        disclaimer = suggestions.get("disclaimer", "Always consult a doctor before taking any medication.")
+        disclaimer_text = f"\n\n⚠️ Disclaimer: {disclaimer}"
+        self.allopathic_textbox.insert("end", disclaimer_text, "disclaimer")
+        self.ayurvedic_textbox.insert("end", disclaimer_text, "disclaimer")
+        
+        # --- Configure Textbox Styling ---
+        for textbox in [self.allopathic_textbox, self.ayurvedic_textbox]:
+            textbox.tag_config("header", font=ctk.CTkFont(size=14, weight="bold"), foreground="#3498db")
+            textbox.tag_config("text", font=ctk.CTkFont(size=12))
+            textbox.tag_config("note", font=ctk.CTkFont(size=11, slant="italic"), foreground="gray")
+            textbox.tag_config("disclaimer", font=ctk.CTkFont(size=10, weight="bold"), foreground="#e74c3c")
+            textbox.configure(state="disabled")
+
+        self.suggestion_button.configure(state="normal")
+        self.set_status("Suggestions generated successfully.", "green")
+        
 if __name__ == "__main__":
     app = NutriScanApp()  # ✅ Must use your class, not tk.Tk()
     app.mainloop()
