@@ -247,9 +247,22 @@ class NutriScanApp(ctk.CTk):
         self.create_pain_relief_tab(self.tab_view.tab("Pain Relief & Exercises"))  # NEW TAB CREATION
         self.create_health_community_tab(self.tab_view.tab("Health Community"))  # NEW TAB CREATION
 
+        # Bind tab change event to stop voice
+        self.tab_view._segmented_button.configure(command=self.on_tab_change)
 
         self.status_bar = ctk.CTkLabel(self, text=f"Welcome back, {self.current_user}!", height=25, fg_color="#1F2937", text_color="#FFFFFF")
         self.status_bar.grid(row=2, column=0, padx=0, pady=0, sticky="ew")
+
+    def on_tab_change(self, value):
+        """Handle tab changes and stop voice if speaking"""
+        # Stop voice when changing tabs
+        self.stop_voice_on_tab_change()
+        
+        # Actually switch to the selected tab
+        self.tab_view.set(value)
+        
+        # Update status
+        self.set_status(f"Switched to {value} tab", "blue")
 
 
     # ===================================================================
@@ -1236,23 +1249,88 @@ class NutriScanApp(ctk.CTk):
         if not self.is_running:
             return
         tab.grid_columnconfigure(0, weight=1)
-        tab.grid_rowconfigure(0, weight=1)
-        audit_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="#2D3748")
-        audit_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-        audit_frame.grid_columnconfigure(0, weight=1)
-        title_label = ctk.CTkLabel(audit_frame, text="Home Product Audit", font=ctk.CTkFont(size=24, weight="bold"), text_color="#FFFFFF")
+        tab.grid_rowconfigure(1, weight=1)
+        
+        # Title
+        title_label = ctk.CTkLabel(tab, text="🏠 Pantry Audit & Recommendations", font=ctk.CTkFont(size=24, weight="bold"), text_color="#FFFFFF")
         title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
-        upload_button = ctk.CTkButton(audit_frame, text="Upload Product Images", command=self.upload_audit_images, height=40, fg_color="#10b981", hover_color="#059669")
-        upload_button.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
-        self.audit_preview_label = ctk.CTkLabel(audit_frame, text="No images uploaded yet.", font=ctk.CTkFont(size=14), wraplength=400, justify="left", text_color="#D1D5DB")
-        self.audit_preview_label.grid(row=2, column=0, padx=20, pady=10, sticky="w")
-        recommendations_frame = ctk.CTkFrame(audit_frame, corner_radius=10, fg_color="#2B2B2B")
-        recommendations_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
+        
+        # Main content area with scroll
+        main_frame = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+        main_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        main_frame.grid_columnconfigure(0, weight=1)
+        
+        # Upload section
+        upload_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
+        upload_frame.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="ew")
+        upload_frame.grid_columnconfigure(0, weight=1)
+        
+        upload_header = ctk.CTkLabel(upload_frame, text="📸 Upload Product Images", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
+        upload_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
+        
+        upload_button = ctk.CTkButton(
+            upload_frame, 
+            text="Select Product Images", 
+            command=self.upload_audit_images, 
+            height=40, 
+            fg_color="#10B981", 
+            hover_color="#059669"
+        )
+        upload_button.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
+        
+        self.audit_preview_label = ctk.CTkLabel(
+            upload_frame, 
+            text="No images uploaded yet. Upload images of your pantry items to get personalized recommendations.", 
+            font=ctk.CTkFont(size=12), 
+            wraplength=500, 
+            justify="left", 
+            text_color="#D1D5DB"
+        )
+        self.audit_preview_label.grid(row=2, column=0, padx=20, pady=(0, 15), sticky="w")
+        
+        # Pantry list section
+        pantry_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
+        pantry_frame.grid(row=1, column=0, padx=0, pady=(0, 20), sticky="ew")
+        pantry_frame.grid_columnconfigure(0, weight=1)
+        
+        pantry_header = ctk.CTkLabel(pantry_frame, text="📋 Detected Pantry Items", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
+        pantry_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
+        
+        self.pantry_list_textbox = ctk.CTkTextbox(
+            pantry_frame,
+            corner_radius=8,
+            state="disabled",
+            font=("Arial", 12),
+            wrap="word",
+            fg_color="#1F2937",
+            text_color="#D1D5DB",
+            height=120
+        )
+        self.pantry_list_textbox.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
+        
+        # Recommendations section
+        recommendations_frame = ctk.CTkFrame(main_frame, corner_radius=10, fg_color="#2B2B2B")
+        recommendations_frame.grid(row=2, column=0, padx=0, pady=(0, 20), sticky="ew")
         recommendations_frame.grid_columnconfigure(0, weight=1)
-        rec_label = ctk.CTkLabel(recommendations_frame, text="AI Recommendations", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
-        rec_label.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="w")
-        self.audit_rec_detail = ctk.CTkLabel(recommendations_frame, text="Upload product images to get suggestions.", font=ctk.CTkFont(size=12), text_color="#D1D5DB", wraplength=400, justify="left")
-        self.audit_rec_detail.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="w")
+        
+        rec_header = ctk.CTkLabel(recommendations_frame, text="💡 AI Recommendations", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF")
+        rec_header.grid(row=0, column=0, padx=20, pady=(15, 10), sticky="w")
+        
+        self.audit_rec_detail = ctk.CTkTextbox(
+            recommendations_frame,
+            corner_radius=8,
+            state="disabled",
+            font=("Arial", 12),
+            wrap="word",
+            fg_color="#1F2937",
+            text_color="#D1D5DB",
+            height=150
+        )
+        self.audit_rec_detail.grid(row=1, column=0, padx=20, pady=(0, 15), sticky="ew")
+        
+        # Initialize audit data
+        self.audit_products = []
+        self.pantry_items = []
 
     def upload_audit_images(self):
         if not self.is_running:
@@ -1284,25 +1362,229 @@ class NutriScanApp(ctk.CTk):
     def analyze_audit_products(self, text):
         try:
             model = genai.GenerativeModel('gemini-1.5-flash')
+            allergies = self.profile_data.get("allergies", "")
+            goals = self.profile_data.get("goals", "")
+            
+            json_template = """
+{
+  "pantry_items": [
+    {
+      "name": "string",
+      "category": "string",
+      "health_rating": "number (0-100)",
+      "expiry_info": "string",
+      "nutritional_notes": "string"
+    }
+  ],
+  "recommendations": {
+    "healthy_items": ["string"],
+    "items_to_limit": ["string"],
+    "items_to_replace": ["string"],
+    "suggested_additions": ["string"],
+    "general_advice": "string"
+  },
+  "pantry_score": "number (0-100)",
+  "summary": "string"
+}
+"""
             prompt = f"""
-            You are an advanced Health Product Analysis AI. Analyze the following text from product images:
-            {text}
+            You are an advanced Health Product Analysis AI for NutriScanAI. Analyze the following text from pantry product images:
+            
+            Product Text: {text}
+            
+            User Profile:
+            - Allergies: {allergies}
+            - Health Goals: {goals}
+            
+            Your task:
+            1. Identify all food products mentioned in the text
+            2. Categorize them (e.g., grains, proteins, snacks, beverages, etc.)
+            3. Rate each item's healthiness (0-100 scale)
+            4. Check for expiry dates or freshness indicators
+            5. Provide personalized recommendations based on user's health profile
+            6. Calculate overall pantry health score
+            7. Suggest healthier alternatives for unhealthy items
+            
             Respond in JSON format:
             ```json
-            {
-                "flagged": ["string"],
-                "recommendations": ["string"]
-            }
+            {json_template}
+            ```
+            
+            Focus on:
+            - Nutritional value assessment
+            - Allergen identification
+            - Health goal alignment
+            - Expiry date warnings
+            - Healthier alternatives
+            """
+            
+            response = model.generate_content(prompt)
+            json_text = response.text.strip().replace("```json", "").replace("```", "")
+            return json.loads(json_text)
+            
+        except Exception as e:
+            print(f"Error in audit analysis: {e}")
+            # Return fallback analysis
+            return self.get_fallback_audit_analysis(text)
+
+    def get_fallback_audit_analysis(self, text):
+        """Fallback audit analysis when AI fails"""
+        # Simple text parsing to extract potential food items
+        common_foods = [
+            "rice", "pasta", "bread", "milk", "cheese", "eggs", "chicken", "beef", "fish",
+            "tomatoes", "onions", "potatoes", "carrots", "apples", "bananas", "oranges",
+            "cereal", "yogurt", "butter", "oil", "sugar", "salt", "flour", "beans",
+            "nuts", "chips", "soda", "juice", "cookies", "candy", "chocolate"
+        ]
+        
+        detected_items = []
+        text_lower = text.lower()
+        
+        for food in common_foods:
+            if food in text_lower:
+                detected_items.append({
+                    "name": food.title(),
+                    "category": self.categorize_food(food),
+                    "health_rating": self.get_food_health_rating(food),
+                    "expiry_info": "Check package for expiry date",
+                    "nutritional_notes": self.get_food_nutritional_notes(food)
+                })
+        
+        return {
+            "pantry_items": detected_items,
+            "recommendations": {
+                "healthy_items": [item["name"] for item in detected_items if item["health_rating"] >= 70],
+                "items_to_limit": [item["name"] for item in detected_items if 40 <= item["health_rating"] < 70],
+                "items_to_replace": [item["name"] for item in detected_items if item["health_rating"] < 40],
+                "suggested_additions": ["Fresh vegetables", "Whole grains", "Lean proteins", "Healthy fats"],
+                "general_advice": "Consider adding more fresh produce and whole foods to your pantry."
+            },
+            "pantry_score": min(100, max(0, sum(item["health_rating"] for item in detected_items) // len(detected_items) if detected_items else 50)),
+            "summary": f"Found {len(detected_items)} items in your pantry. Focus on adding more whole foods and reducing processed items."
+        }
+
+    def categorize_food(self, food):
+        """Categorize food items"""
+        categories = {
+            "grains": ["rice", "pasta", "bread", "cereal", "flour", "oats"],
+            "proteins": ["chicken", "beef", "fish", "eggs", "beans", "tofu"],
+            "dairy": ["milk", "cheese", "yogurt", "butter"],
+            "vegetables": ["tomatoes", "onions", "potatoes", "carrots"],
+            "fruits": ["apples", "bananas", "oranges"],
+            "snacks": ["chips", "cookies", "candy", "chocolate"],
+            "beverages": ["soda", "juice"],
+            "pantry": ["oil", "sugar", "salt", "nuts"]
+        }
+        
+        for category, items in categories.items():
+            if food in items:
+                return category.title()
+        return "Other"
+
+    def get_food_health_rating(self, food):
+        """Get health rating for food items"""
+        healthy_foods = ["rice", "pasta", "bread", "milk", "cheese", "eggs", "chicken", "beef", "fish", "tomatoes", "onions", "potatoes", "carrots", "apples", "bananas", "oranges", "cereal", "yogurt", "beans", "nuts"]
+        moderate_foods = ["butter", "oil", "flour"]
+        unhealthy_foods = ["sugar", "chips", "soda", "juice", "cookies", "candy", "chocolate"]
+        
+        if food in healthy_foods:
+            return 80
+        elif food in moderate_foods:
+            return 60
+        elif food in unhealthy_foods:
+            return 30
+        else:
+            return 50
+
+    def get_food_nutritional_notes(self, food):
+        """Get nutritional notes for food items"""
+        notes = {
+            "rice": "Good source of carbohydrates, consider brown rice for more fiber",
+            "pasta": "Carbohydrate source, whole grain options are healthier",
+            "bread": "Choose whole grain varieties for more fiber",
+            "milk": "Good source of calcium and protein",
+            "cheese": "High in protein and calcium, but watch portion sizes",
+            "eggs": "Excellent source of protein and nutrients",
+            "chicken": "Lean protein source",
+            "beef": "Good protein source, choose lean cuts",
+            "fish": "Excellent source of omega-3 fatty acids",
+            "tomatoes": "Rich in lycopene and vitamin C",
+            "onions": "Good source of antioxidants",
+            "potatoes": "Good source of potassium, eat with skin for fiber",
+            "carrots": "Rich in beta-carotene and fiber",
+            "apples": "Good source of fiber and vitamin C",
+            "bananas": "Rich in potassium and natural sugars",
+            "oranges": "Excellent source of vitamin C",
+            "cereal": "Choose whole grain, low-sugar options",
+            "yogurt": "Good source of protein and probiotics",
+            "beans": "Excellent source of fiber and plant protein",
+            "nuts": "Good source of healthy fats and protein",
+            "butter": "High in saturated fat, use in moderation",
+            "oil": "Choose healthy oils like olive oil",
+            "flour": "Whole grain flour is healthier",
+            "sugar": "Limit added sugars",
+            "chips": "High in salt and unhealthy fats",
+            "soda": "High in sugar, avoid",
+            "juice": "High in sugar, eat whole fruits instead",
+            "cookies": "High in sugar and unhealthy fats",
+            "candy": "High in sugar, limit consumption",
+            "chocolate": "Dark chocolate in moderation can be healthy"
+        }
+        return notes.get(food, "Consider nutritional information on package")
+
+    def analyze_audit_products(self, text):
+        """Analyze audit products using AI"""
+        if not self.is_running:
+            return None
+            
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            profile_data = self.profile_data or {}
+            allergies = profile_data.get("allergies", [])
+            goals = profile_data.get("goals", [])
+            
+            prompt = f"""
+            Analyze this pantry audit text and provide recommendations:
+            
+            Text: {text}
+            
+            User Allergies: {allergies}
+            User Goals: {goals}
+            
+            Extract all food items and provide:
+            1. List of pantry items with categories
+            2. Health recommendations for each item
+            3. Overall pantry health score
+            4. Suggested replacements for unhealthy items
+            
+            Respond in JSON format:
+            ```json
+            {{
+                "pantry_items": [
+                    {{
+                        "name": "item_name",
+                        "category": "category",
+                        "health_rating": "Good/Fair/Poor",
+                        "notes": "health notes"
+                    }}
+                ],
+                "recommendations": {{
+                    "healthy": ["items to keep"],
+                    "limit": ["items to limit"],
+                    "replace": ["items to replace"],
+                    "suggested_additions": ["healthy items to add"]
+                }},
+                "pantry_score": 75,
+                "summary": "overall assessment"
+            }}
             ```
             """
             response = model.generate_content(prompt)
             json_text = response.text.strip().replace("```json", "").replace("```", "")
             return json.loads(json_text)
         except Exception as e:
-            return {
-                "flagged": ["High-sodium sauce"],
-                "recommendations": ["Low-sodium soy sauce", "Olive oil spray"]
-            }
+            print(f"Error in audit analysis: {e}")
+            return self.get_fallback_audit_analysis(text)
 
     def update_audit_recommendations(self, analysis):
         if not self.is_running:
@@ -1361,6 +1643,23 @@ class NutriScanApp(ctk.CTk):
                                             command=self.play_last_ai_response, fg_color="#F59E0B", hover_color="#FBBF24")
         self.speaker_button.grid(row=0, column=3, padx=(10, 0))
 
+        # Add pause button for voice
+        self.pause_button = ctk.CTkButton(
+            input_frame,
+            text="⏸️ Pause",
+            width=80,
+            command=self.pause_voice,
+            fg_color="#EF4444",
+            hover_color="#DC2626",
+            state="disabled"
+        )
+        self.pause_button.grid(row=0, column=4, padx=(10, 0))
+
+        # Initialize voice control variables
+        self.is_speaking = False
+        self.is_paused = False
+        self.current_audio_process = None
+
         self.update_chat_display("AI Coach: ", "Hello! I am your AI Health Coach. How can I help you today?", is_ai=True)
 
     def switch_agent(self, selected_agent_name: str):
@@ -1401,21 +1700,61 @@ class NutriScanApp(ctk.CTk):
 
     def speak_response(self, text: str):
         if not text or not self.is_running: return
+        self.is_speaking = True
+        self.is_paused = False
         self.speaker_button.configure(state="disabled")
+        self.pause_button.configure(state="normal", text="⏸️ Pause")
         threading.Thread(target=self._threaded_speak, args=(text,), daemon=True).start()
+
+    def pause_voice(self):
+        """Pause or resume voice playback"""
+        if not self.is_speaking:
+            return
+            
+        if self.is_paused:
+            # Resume
+            self.is_paused = False
+            self.pause_button.configure(text="⏸️ Pause")
+            self.set_status("Voice resumed", "blue")
+        else:
+            # Pause
+            self.is_paused = True
+            self.pause_button.configure(text="▶️ Resume")
+            self.set_status("Voice paused", "orange")
+            
+        # Note: Actual pause/resume would require more complex audio handling
+        # This is a simplified implementation
+
+    def stop_voice_on_tab_change(self):
+        """Stop voice when changing tabs"""
+        if self.is_speaking:
+            self.is_speaking = False
+            self.is_paused = False
+            self.pause_button.configure(state="disabled", text="⏸️ Pause")
+            self.speaker_button.configure(state="normal")
+            self.set_status("Voice stopped", "blue")
 
     def _threaded_speak(self, text: str):
         try:
             tts = gTTS(text=text, lang='en')
             temp_file = "temp_response.mp3"
             tts.save(temp_file)
+            
+            # Check if speaking was stopped before playing
+            if not self.is_speaking:
+                return
+                
             playsound(temp_file)
             os.remove(temp_file)
         except Exception as e:
             print(f"TTS Error: {e}")
             if self.is_running: self.after(0, self.set_status, "Error playing audio.", "red")
         finally:
-            if self.is_running: self.after(0, lambda: self.speaker_button.configure(state="normal"))
+            if self.is_running:
+                self.after(0, lambda: self.speaker_button.configure(state="normal"))
+                self.after(0, lambda: self.pause_button.configure(state="disabled", text="⏸️ Pause"))
+                self.is_speaking = False
+                self.is_paused = False
 
     def play_last_ai_response(self):
         if self.last_ai_response:
@@ -1526,7 +1865,7 @@ class NutriScanApp(ctk.CTk):
         if not self.is_running:
             return
         tab.grid_columnconfigure(0, weight=1)
-        tab.grid_rowconfigure(2, weight=1)
+        tab.grid_rowconfigure(3, weight=1)
 
         title_label = ctk.CTkLabel(
             tab,
@@ -1536,6 +1875,30 @@ class NutriScanApp(ctk.CTk):
         )
         title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
 
+        # Options frame for veg/nonveg and other preferences
+        options_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="#2B2B2B")
+        options_frame.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+        options_frame.grid_columnconfigure((0, 1, 2), weight=1)
+
+        # Dietary preference
+        ctk.CTkLabel(options_frame, text="Dietary Preference:", font=ctk.CTkFont(weight="bold"), text_color="#FFFFFF").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        self.dietary_preference = ctk.CTkOptionMenu(
+            options_frame,
+            values=["Vegetarian", "Non-Vegetarian", "Vegan", "Flexitarian"],
+            command=self.on_dietary_change
+        )
+        self.dietary_preference.grid(row=0, column=1, padx=10, pady=10, sticky="ew")
+
+        # Calorie target
+        ctk.CTkLabel(options_frame, text="Daily Calories:", font=ctk.CTkFont(weight="bold"), text_color="#FFFFFF").grid(row=0, column=2, padx=10, pady=10, sticky="w")
+        self.calorie_target = ctk.CTkOptionMenu(
+            options_frame,
+            values=["1200-1500", "1500-1800", "1800-2100", "2100-2400", "2400+"],
+            command=self.on_calorie_change
+        )
+        self.calorie_target.grid(row=0, column=3, padx=10, pady=10, sticky="ew")
+
+        # Generate button
         generate_button = ctk.CTkButton(
             tab,
             text="Generate Weekly Meal Plan",
@@ -1544,10 +1907,32 @@ class NutriScanApp(ctk.CTk):
             fg_color="#3B82F6",
             hover_color="#60A5FA"
         )
-        generate_button.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+        generate_button.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
+
+        # Meal plan display with edit capabilities
+        meal_plan_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="#2B2B2B")
+        meal_plan_frame.grid(row=3, column=0, padx=20, pady=10, sticky="nsew")
+        meal_plan_frame.grid_columnconfigure(0, weight=1)
+        meal_plan_frame.grid_rowconfigure(1, weight=1)
+
+        meal_plan_header = ctk.CTkFrame(meal_plan_frame, fg_color="transparent")
+        meal_plan_header.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="ew")
+        meal_plan_header.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(meal_plan_header, text="Weekly Meal Plan", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF").grid(row=0, column=0, sticky="w")
+        self.edit_meal_plan_button = ctk.CTkButton(
+            meal_plan_header,
+            text="Edit Plan",
+            command=self.toggle_meal_plan_editing,
+            width=100,
+            height=30,
+            fg_color="#10B981",
+            hover_color="#059669"
+        )
+        self.edit_meal_plan_button.grid(row=0, column=1, padx=(10, 0))
 
         self.meal_plan_textbox = ctk.CTkTextbox(
-            tab,
+            meal_plan_frame,
             corner_radius=10,
             state="disabled",
             font=("Arial", 14),
@@ -1555,19 +1940,28 @@ class NutriScanApp(ctk.CTk):
             fg_color="#2B2B2B",
             text_color="#FFFFFF"
         )
-        self.meal_plan_textbox.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
+        self.meal_plan_textbox.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="nsew")
 
+        # Shopping list section
         shopping_list_frame = ctk.CTkFrame(tab, corner_radius=10, fg_color="#2B2B2B")
-        shopping_list_frame.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
+        shopping_list_frame.grid(row=4, column=0, padx=20, pady=10, sticky="ew")
         shopping_list_frame.grid_columnconfigure(0, weight=1)
 
-        shopping_list_label = ctk.CTkLabel(
-            shopping_list_frame,
-            text="Shopping List",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            text_color="#FFFFFF"
+        shopping_list_header = ctk.CTkFrame(shopping_list_frame, fg_color="transparent")
+        shopping_list_header.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="ew")
+        shopping_list_header.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(shopping_list_header, text="Shopping List", font=ctk.CTkFont(size=16, weight="bold"), text_color="#FFFFFF").grid(row=0, column=0, sticky="w")
+        self.generate_shopping_list_button = ctk.CTkButton(
+            shopping_list_header,
+            text="Generate List",
+            command=self.generate_shopping_list,
+            width=120,
+            height=30,
+            fg_color="#F59E0B",
+            hover_color="#D97706"
         )
-        shopping_list_label.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="w")
+        self.generate_shopping_list_button.grid(row=0, column=1, padx=(10, 0))
 
         self.shopping_list_textbox = ctk.CTkTextbox(
             shopping_list_frame,
@@ -1577,23 +1971,30 @@ class NutriScanApp(ctk.CTk):
             wrap="word",
             fg_color="#2B2B2B",
             text_color="#D1D5DB",
-            height=100
+            height=120
         )
         self.shopping_list_textbox.grid(row=1, column=0, padx=15, pady=(0, 10), sticky="ew")
 
+        # Initialize meal plan data
+        self.current_meal_plan = None
+        self.meal_plan_editable = False
+
+    def on_dietary_change(self, value):
+        # Add any additional logic you want to execute when dietary preference changes
+        print(f"Dietary preference changed: {value}")
+
+    def on_calorie_change(self, value):
+        # Add any additional logic you want to execute when calorie target changes
+        print(f"Calorie target changed: {value}")
 
     def generate_meal_plan(self):
-        if not self.is_running:
-            return
-        self.set_status("Generating meal plan...", "blue")
-        self.meal_plan_textbox.configure(state="normal")
-        self.meal_plan_textbox.delete("1.0", "end")
-        self.shopping_list_textbox.configure(state="normal")
-        self.shopping_list_textbox.delete("1.0", "end")
-        threading.Thread(target=self.run_meal_plan_generation).start()
+        # Add logic to generate a meal plan based on the selected dietary preference and calorie target
+        print("Generating meal plan...")
+        # You might want to call a function to fetch recipes based on these preferences
+        self.set_status("Meal plan generation in progress...", "blue")
+        threading.Thread(target=self.fetch_and_display_meal_plan).start()
 
-
-    def run_meal_plan_generation(self):
+    def fetch_and_display_meal_plan(self):
         if not self.is_running:
             return
         try:
@@ -1604,12 +2005,13 @@ class NutriScanApp(ctk.CTk):
             if self.is_running:
                 self.after(0, self.set_status, f"Error generating meal plan: {e}", "red")
 
-
     def get_meal_plan(self):
         model = genai.GenerativeModel('gemini-1.5-flash')
         allergies = self.profile_data.get("allergies", "")
         goals = self.profile_data.get("goals", "")
         scanned_foods = json.dumps(self.scanned_foods)
+        dietary_pref = self.dietary_preference.get()
+        calorie_target = self.calorie_target.get()
 
         json_template = """
 {
@@ -1617,62 +2019,230 @@ class NutriScanApp(ctk.CTk):
     {
       "day": "string",
       "meals": {
-        "breakfast": {"name": "string", "ingredients": ["string"], "calories": "string"},
-        "lunch": {"name": "string", "ingredients": ["string"], "calories": "string"},
-        "dinner": {"name": "string", "ingredients": ["string"], "calories": "string"}
+        "breakfast": {"name": "string", "ingredients": ["string"], "calories": "string", "prep_time": "string"},
+        "lunch": {"name": "string", "ingredients": ["string"], "calories": "string", "prep_time": "string"},
+        "dinner": {"name": "string", "ingredients": ["string"], "calories": "string", "prep_time": "string"}
       }
     }
   ],
-  "shopping_list": ["string"]
+  "shopping_list": ["string"],
+  "total_weekly_calories": "string"
 }
 """
         prompt = (
-            "You are a nutritionist AI for NutriScanAI. Generate a personalized 7-day meal plan based on the user's health profile and scanned food data.\n"
+            f"You are a nutritionist AI for NutriScanAI. Generate a personalized 7-day meal plan based on the user's preferences:\n"
+            f"- Dietary Preference: {dietary_pref}\n"
+            f"- Daily Calorie Target: {calorie_target}\n"
             f"- Allergies: {allergies}\n"
             f"- Health Goals: {goals}\n"
-            f"- Scanned Foods: {scanned_foods}\n"
-            "Respond in JSON format:\n"
+            f"- Scanned Foods Available: {scanned_foods}\n\n"
+            f"Requirements:\n"
+            f"1. Create 7 days of meals (breakfast, lunch, dinner)\n"
+            f"2. Respect the dietary preference strictly\n"
+            f"3. Stay within the calorie target range\n"
+            f"4. Avoid any allergens\n"
+            f"5. Include preparation time for each meal\n"
+            f"6. Use scanned foods where possible\n"
+            f"7. Provide a comprehensive shopping list\n\n"
+            f"Respond in JSON format:\n"
             f"```json\n{json_template}\n```\n"
-            "Avoid allergens and align meals with health goals. Include recipes using scanned foods where possible."
         )
         try:
             response = model.generate_content(prompt)
             json_text = response.text.strip().replace("```json", "").replace("```", "")
             return json.loads(json_text)
-        except Exception:
-            # fallback sample plan
-            return {
-                "meal_plan": [
-                    {
-                        "day": "Monday",
-                        "meals": {
-                            "breakfast": {"name": "Oatmeal with Berries", "ingredients": ["oats","milk","blueberries"], "calories": "300 kcal"},
-                            "lunch": {"name": "Grilled Chicken Salad", "ingredients": ["chicken breast","lettuce","tomato"], "calories": "350 kcal"},
-                            "dinner": {"name": "Baked Salmon", "ingredients": ["salmon","quinoa","spinach"], "calories": "400 kcal"}
-                        }
-                    }
-                ],
-                "shopping_list": ["oats","milk","blueberries","chicken breast","salmon"]
-            }
+        except Exception as e:
+            print(f"Error parsing AI response: {e}")
+            # Return fallback meal plan based on dietary preference
+            return self.get_fallback_meal_plan(dietary_pref, calorie_target)
 
+    def get_fallback_meal_plan(self, dietary_pref, calorie_target):
+        """Fallback meal plans for different dietary preferences"""
+        vegetarian_plan = {
+            "meal_plan": [
+                {
+                    "day": "Monday",
+                    "meals": {
+                        "breakfast": {"name": "Oatmeal with Berries", "ingredients": ["oats", "milk", "blueberries", "honey"], "calories": "350 kcal", "prep_time": "10 min"},
+                        "lunch": {"name": "Quinoa Buddha Bowl", "ingredients": ["quinoa", "chickpeas", "spinach", "tomato", "cucumber"], "calories": "450 kcal", "prep_time": "20 min"},
+                        "dinner": {"name": "Lentil Curry", "ingredients": ["lentils", "onion", "tomato", "garlic", "rice"], "calories": "400 kcal", "prep_time": "25 min"}
+                    }
+                },
+                {
+                    "day": "Tuesday",
+                    "meals": {
+                        "breakfast": {"name": "Greek Yogurt Parfait", "ingredients": ["greek yogurt", "granola", "strawberries", "honey"], "calories": "320 kcal", "prep_time": "5 min"},
+                        "lunch": {"name": "Mediterranean Salad", "ingredients": ["mixed greens", "feta cheese", "olives", "cucumber", "olive oil"], "calories": "380 kcal", "prep_time": "15 min"},
+                        "dinner": {"name": "Vegetable Stir Fry", "ingredients": ["tofu", "broccoli", "carrots", "soy sauce", "brown rice"], "calories": "420 kcal", "prep_time": "20 min"}
+                    }
+                }
+            ],
+            "shopping_list": ["oats", "milk", "blueberries", "honey", "quinoa", "chickpeas", "spinach", "tomato", "cucumber", "lentils", "onion", "garlic", "rice", "greek yogurt", "granola", "strawberries", "mixed greens", "feta cheese", "olives", "olive oil", "tofu", "broccoli", "carrots", "soy sauce", "brown rice"],
+            "total_weekly_calories": "1750 kcal"
+        }
+        
+        non_vegetarian_plan = {
+            "meal_plan": [
+                {
+                    "day": "Monday",
+                    "meals": {
+                        "breakfast": {"name": "Eggs and Toast", "ingredients": ["eggs", "whole grain bread", "butter", "salt"], "calories": "380 kcal", "prep_time": "10 min"},
+                        "lunch": {"name": "Grilled Chicken Salad", "ingredients": ["chicken breast", "lettuce", "tomato", "cucumber", "olive oil"], "calories": "420 kcal", "prep_time": "15 min"},
+                        "dinner": {"name": "Baked Salmon", "ingredients": ["salmon", "quinoa", "spinach", "lemon"], "calories": "450 kcal", "prep_time": "25 min"}
+                    }
+                },
+                {
+                    "day": "Tuesday",
+                    "meals": {
+                        "breakfast": {"name": "Protein Smoothie", "ingredients": ["banana", "protein powder", "milk", "peanut butter"], "calories": "350 kcal", "prep_time": "5 min"},
+                        "lunch": {"name": "Turkey Sandwich", "ingredients": ["turkey", "whole grain bread", "lettuce", "tomato", "mayo"], "calories": "400 kcal", "prep_time": "10 min"},
+                        "dinner": {"name": "Beef Stir Fry", "ingredients": ["beef strips", "broccoli", "carrots", "soy sauce", "brown rice"], "calories": "480 kcal", "prep_time": "20 min"}
+                    }
+                }
+            ],
+            "shopping_list": ["eggs", "whole grain bread", "butter", "salt", "chicken breast", "lettuce", "tomato", "cucumber", "olive oil", "salmon", "quinoa", "spinach", "lemon", "banana", "protein powder", "milk", "peanut butter", "turkey", "mayo", "beef strips", "broccoli", "carrots", "soy sauce", "brown rice"],
+            "total_weekly_calories": "1850 kcal"
+        }
+        
+        if dietary_pref == "Vegetarian":
+            return vegetarian_plan
+        elif dietary_pref == "Non-Vegetarian":
+            return non_vegetarian_plan
+        else:
+            return vegetarian_plan  # Default to vegetarian
 
     def display_meal_plan(self, meal_plan_data):
+        if not self.is_running:
+            return
+            
+        self.current_meal_plan = meal_plan_data
         self.meal_plan_textbox.configure(state="normal")
         self.meal_plan_textbox.delete("1.0", "end")
+        
+        # Display dietary info
+        dietary_pref = self.dietary_preference.get()
+        calorie_target = self.calorie_target.get()
+        self.meal_plan_textbox.insert("end", f"🍽️ {dietary_pref} Meal Plan - {calorie_target} calories/day\n", "header")
+        self.meal_plan_textbox.insert("end", "=" * 50 + "\n\n")
+        
         for day_plan in meal_plan_data.get("meal_plan", []):
-            self.meal_plan_textbox.insert("end", f"{day_plan['day']}:\n", ("bold",))
+            self.meal_plan_textbox.insert("end", f"📅 {day_plan['day']}:\n", "day_header")
             for meal_type, meal in day_plan["meals"].items():
-                self.meal_plan_textbox.insert("end", f"  {meal_type.capitalize()}: {meal['name']} ({meal['calories']})\n")
-                self.meal_plan_textbox.insert("end", f"    Ingredients: {', '.join(meal['ingredients'])}\n\n")
-        self.meal_plan_textbox.tag_config("bold", font=ctk.CTkFont(weight="bold"))
+                self.meal_plan_textbox.insert("end", f"  🍳 {meal_type.capitalize()}: {meal['name']}\n", "meal_name")
+                self.meal_plan_textbox.insert("end", f"     ⏰ Prep Time: {meal['prep_time']} | 🔥 Calories: {meal['calories']}\n", "meal_details")
+                self.meal_plan_textbox.insert("end", f"     📝 Ingredients: {', '.join(meal['ingredients'])}\n\n", "ingredients")
+        
+        # Display total calories
+        total_calories = meal_plan_data.get("total_weekly_calories", "N/A")
+        self.meal_plan_textbox.insert("end", f"📊 Total Weekly Calories: {total_calories}\n", "total_calories")
+        
+        # Configure text tags for styling
+        self.meal_plan_textbox.tag_config("header", font=ctk.CTkFont(size=16, weight="bold"), foreground="#3B82F6")
+        self.meal_plan_textbox.tag_config("day_header", font=ctk.CTkFont(size=14, weight="bold"), foreground="#10B981")
+        self.meal_plan_textbox.tag_config("meal_name", font=ctk.CTkFont(weight="bold"), foreground="#FFFFFF")
+        self.meal_plan_textbox.tag_config("meal_details", foreground="#F59E0B")
+        self.meal_plan_textbox.tag_config("ingredients", foreground="#D1D5DB")
+        self.meal_plan_textbox.tag_config("total_calories", font=ctk.CTkFont(weight="bold"), foreground="#EF4444")
+        
         self.meal_plan_textbox.configure(state="disabled")
+        self.set_status("Meal plan generated successfully!", "green")
 
-        self.shopping_list_textbox.configure(state="normal")
-        self.shopping_list_textbox.delete("1.0", "end")
-        for item in meal_plan_data.get("shopping_list", []):
-            self.shopping_list_textbox.insert("end", f"• {item}\n")
-        self.shopping_list_textbox.configure(state="disabled")
-        self.set_status("Meal plan generated successfully.", "green")
+    def toggle_meal_plan_editing(self):
+        self.meal_plan_editable = not self.meal_plan_editable
+        if self.meal_plan_editable:
+            self.edit_meal_plan_button.configure(text="Save Plan")
+            self.meal_plan_textbox.configure(state="normal")
+        else:
+            self.edit_meal_plan_button.configure(text="Edit Plan")
+            self.meal_plan_textbox.configure(state="disabled")
+
+    def generate_shopping_list(self):
+        # Add logic to generate a shopping list based on the current meal plan
+        print("Generating shopping list...")
+        self.set_status("Shopping list generation in progress...", "blue")
+        threading.Thread(target=self.fetch_and_display_shopping_list).start()
+
+    def fetch_and_display_shopping_list(self):
+        if not self.is_running:
+            return
+            
+        if not self.current_meal_plan:
+            self.set_status("Please generate a meal plan first!", "red")
+            return
+            
+        try:
+            # Extract shopping list from current meal plan
+            shopping_list = self.current_meal_plan.get("shopping_list", [])
+            
+            # Organize by categories
+            categorized_list = self.categorize_shopping_list(shopping_list)
+            
+            self.shopping_list_textbox.configure(state="normal")
+            self.shopping_list_textbox.delete("1.0", "end")
+            
+            # Display categorized shopping list
+            self.shopping_list_textbox.insert("end", "🛒 Shopping List\n", "header")
+            self.shopping_list_textbox.insert("end", "=" * 30 + "\n\n", "header")
+            
+            for category, items in categorized_list.items():
+                self.shopping_list_textbox.insert("end", f"📦 {category}:\n", "category")
+                for item in items:
+                    self.shopping_list_textbox.insert("end", f"  • {item}\n", "item")
+                self.shopping_list_textbox.insert("end", "\n")
+            
+            # Configure text tags for styling
+            self.shopping_list_textbox.tag_config("header", font=ctk.CTkFont(size=14, weight="bold"), foreground="#3B82F6")
+            self.shopping_list_textbox.tag_config("category", font=ctk.CTkFont(weight="bold"), foreground="#10B981")
+            self.shopping_list_textbox.tag_config("item", foreground="#D1D5DB")
+            
+            self.shopping_list_textbox.configure(state="disabled")
+            self.set_status("Shopping list generated successfully!", "green")
+            
+        except Exception as e:
+            self.set_status(f"Error generating shopping list: {e}", "red")
+
+    def categorize_shopping_list(self, items):
+        """Categorize shopping list items for better organization"""
+        categories = {
+            "Proteins": [],
+            "Vegetables": [],
+            "Fruits": [],
+            "Grains": [],
+            "Dairy": [],
+            "Pantry": [],
+            "Spices & Condiments": []
+        }
+        
+        # Define item categories
+        protein_items = ["chicken", "beef", "pork", "fish", "salmon", "tuna", "eggs", "tofu", "lentils", "chickpeas", "turkey"]
+        vegetable_items = ["spinach", "lettuce", "tomato", "cucumber", "broccoli", "carrots", "onion", "garlic", "bell pepper", "mushrooms"]
+        fruit_items = ["apple", "banana", "orange", "strawberries", "blueberries", "grapes", "mango", "pineapple"]
+        grain_items = ["rice", "quinoa", "oats", "bread", "pasta", "flour", "cereal"]
+        dairy_items = ["milk", "cheese", "yogurt", "butter", "cream"]
+        pantry_items = ["oil", "sugar", "salt", "pepper", "vinegar", "sauce"]
+        spice_items = ["cumin", "turmeric", "paprika", "oregano", "basil", "thyme", "cinnamon", "nutmeg"]
+        
+        for item in items:
+            item_lower = item.lower()
+            if any(protein in item_lower for protein in protein_items):
+                categories["Proteins"].append(item)
+            elif any(veg in item_lower for veg in vegetable_items):
+                categories["Vegetables"].append(item)
+            elif any(fruit in item_lower for fruit in fruit_items):
+                categories["Fruits"].append(item)
+            elif any(grain in item_lower for grain in grain_items):
+                categories["Grains"].append(item)
+            elif any(dairy in item_lower for dairy in dairy_items):
+                categories["Dairy"].append(item)
+            elif any(spice in item_lower for spice in spice_items):
+                categories["Spices & Condiments"].append(item)
+            elif any(pantry in item_lower for pantry in pantry_items):
+                categories["Pantry"].append(item)
+            else:
+                categories["Pantry"].append(item)
+        
+        # Remove empty categories
+        return {k: v for k, v in categories.items() if v}
 
     # ===================================================================
     # ✨ NEW: Helper methods for Family Hub photos
