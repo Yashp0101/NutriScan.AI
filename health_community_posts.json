@@ -1,0 +1,77 @@
+[
+  {
+    "id": "1",
+    "user": "Sarah Johnson",
+    "user_avatar": "sarah.png",
+    "timestamp": "2024-01-15T10:30:00",
+    "content": "Just completed my morning yoga session! \ud83e\uddd8\u200d\u2640\ufe0f Feeling energized and ready for the day. The sun salutation sequence really helps with my back flexibility.",
+    "benefits": "Improved flexibility, reduced back pain, better mood",
+    "media_path": "sample_yoga.jpg",
+    "media_type": "image",
+    "likes": 12,
+    "comments": [
+      {
+        "user": "Mike Johnson",
+        "text": "Great job Sarah! Yoga has been amazing for my stress levels too.",
+        "timestamp": "2024-01-15T10:35:00"
+      },
+      {
+        "user": "Emma Johnson",
+        "text": "I need to start doing this! What time do you usually practice?",
+        "timestamp": "2024-01-15T10:40:00"
+      }
+    ],
+    "shares": 3,
+    "category": "Yoga & Flexibility"
+  },
+  {
+    "id": "2",
+    "user": "Mike Johnson",
+    "user_avatar": "mike.png",
+    "timestamp": "2024-01-15T09:15:00",
+    "content": "Weekend workout complete! \ud83d\udcaa Hit a new personal record on deadlifts - 225 lbs for 5 reps. Consistency really pays off.",
+    "benefits": "Increased strength, better posture, confidence boost",
+    "media_path": "sample_workout.jpg",
+    "media_type": "image",
+    "likes": 18,
+    "comments": [
+      {
+        "user": "Sarah Johnson",
+        "text": "That's amazing Mike! You're getting so strong!",
+        "timestamp": "2024-01-15T09:20:00"
+      },
+      {
+        "user": "Grandma Rose",
+        "text": "Be careful with those heavy weights, dear!",
+        "timestamp": "2024-01-15T09:25:00"
+      }
+    ],
+    "shares": 5,
+    "category": "Strength Training"
+  },
+  {
+    "id": "3",
+    "user": "Emma Johnson",
+    "user_avatar": "emma.png",
+    "timestamp": "2024-01-15T08:00:00",
+    "content": "Healthy breakfast prep for the week! \ud83e\udd57 Overnight oats with berries, chia seeds, and almond milk. Perfect for busy mornings.",
+    "benefits": "Saves time, nutritious start to the day, stable energy levels",
+    "media_path": "sample_breakfast.jpg",
+    "media_type": "image",
+    "likes": 25,
+    "comments": [
+      {
+        "user": "Sarah Johnson",
+        "text": "This looks delicious! Can you share the recipe?",
+        "timestamp": "2024-01-15T08:05:00"
+      },
+      {
+        "user": "Mike Johnson",
+        "text": "I need to start meal prepping like this!",
+        "timestamp": "2024-01-15T08:10:00"
+      }
+    ],
+    "shares": 8,
+    "category": "Nutrition & Meal Prep"
+  }
+]
